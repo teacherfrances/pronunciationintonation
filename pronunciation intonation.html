@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Intonation practice</title>
+  <style>
+    :root{
+      --navy:#123B66; --navy-2:#0F3257; --ink:#163A5F; --paper:#ECECEC;
+      --line:#D6DEE8; --good:#0F8A42; --warn:#A16207; --bad:#B42318;
+      --model:#2563eb; --student:#f97316; --grid:#dbe7f5;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{background:var(--paper);color:var(--ink);font-family:"Aptos","Segoe UI","Inter","Helvetica Neue",Arial,sans-serif;line-height:1.4}
+    .main{max-width:1180px;margin:0 auto;padding:16px}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+    .panel-head{background:linear-gradient(90deg,var(--navy-2),#12486F);color:#fff;padding:18px 22px;border-bottom:5px solid #F4B248}
+    .panel-head h2{margin:0;font-size:36px;font-weight:800}
+    .panel-head p{margin:6px 0 0;font-size:20px;color:#E6F0F8}
+    .content{padding:14px;background:#F7FAFE}
+    .notice{background:#EAF4F8;border-left:7px solid #0F766E;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:17px}
+    .grid{display:grid;grid-template-columns:380px 1fr;gap:12px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .label{display:block;margin-bottom:6px;font-weight:800;color:#20496F;font-size:18px}
+    select,button,input[type="text"]{width:100%;border:2px solid #B8C8DA;border-radius:14px;padding:11px 12px;font-size:17px;color:var(--ink);background:#fff;font-family:inherit}
+    button{border:3px solid var(--ink);font-weight:800;cursor:pointer}
+    button.primary{background:var(--ink);color:#fff}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+    .chip{background:#fff;border:2px solid #C7D3E1;border-radius:999px;padding:7px 10px;font-weight:700;color:#325777;font-size:14px}
+    .sentence{background:#fff;border:2px solid #C8D6E6;border-radius:12px;padding:14px;font-size:30px;line-height:1.2;min-height:72px;margin-bottom:10px}
+    .guide{color:#406181;font-size:20px;margin-bottom:10px}
+    .feedback{background:#F3F8FF;border-left:6px solid #3B82F6;border-radius:10px;padding:12px;min-height:100px;font-size:18px;line-height:1.3}
+    .viz-wrap{background:#fff;border:2px solid #c8d6e6;border-radius:12px;padding:10px;margin-bottom:10px}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:#35597b;margin-bottom:8px}
+    .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
+    .dot.model{background:var(--model)} .dot.student{background:var(--student)} .dot.live{background:#111827}
+    canvas{width:100%;height:190px;background:#f8fbff;border:1px solid #d9e5f3;border-radius:8px;display:block}
+    .mini{font-size:13px;color:#5B718A;margin-top:6px}
+    .meter{margin-top:8px;height:12px;border-radius:999px;overflow:hidden;background:#E2EAF4;border:1px solid #C9D5E3}
+    .meter span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#60A5FA,#22C55E)}
+    .small{margin-top:6px;color:#5C748D;font-size:15px}
+    .ok{color:var(--good);font-weight:800}.warn{color:var(--warn);font-weight:800}.bad{color:var(--bad);font-weight:800}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}.sentence{font-size:26px}}
+  </style>
+</head>
+<body>
+  <main class="main">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Intonation practice</h2>
+        <p>Listen. Speak. Compare your intonation.</p>
+      </div>
+
+      <div class="content">
+        <div class="notice"><strong>How to use:</strong> New sentence → Model audio → Start practice → Replay my voice.</div>
+
+        <div class="grid">
+          <aside class="card">
+            <label class="label" for="topic">Topic</label>
+            <select id="topic"></select>
+
+            <div class="row" style="margin-top:10px;">
+              <div>
+                <label class="label" for="pattern">Intonation</label>
+                <select id="pattern">
+                  <option value="statement">Statement (↘)</option>
+                  <option value="yesno">Yes/No question (↗)</option>
+                  <option value="wh">Wh-question (↘)</option>
+                  <option value="choice">Choice question (↗ ↘)</option>
+                  <option value="list">List (↗ ↗ ↘)</option>
+                </select>
+              </div>
+              <div>
+                <label class="label" for="difficulty">Level</label>
+                <select id="difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="mixed" selected>Mixed</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:10px;">
+              <label class="label" for="customSentence">Or type your own sentence</label>
+              <input id="customSentence" type="text" placeholder="Type a sentence and end with . or ?">
+            </div>
+
+            <div class="row4" style="margin-top:10px;">
+              <button id="newBtn" type="button">New sentence</button>
+              <button id="speakBtn" type="button">Model audio</button>
+              <button id="recBtn" class="primary" type="button">Start practice</button>
+              <button id="replayBtn" type="button" disabled>Replay my voice</button>
+            </div>
+
+            <div style="margin-top:8px;">
+              <div class="label" style="font-size:16px;margin-bottom:4px;">Score</div>
+              <div class="meter"><span id="scoreBar"></span></div>
+              <div id="scoreText" class="small">0 / 0 correct</div>
+            </div>
+          </aside>
+
+          <section class="card">
+            <div class="chips">
+              <span class="chip" id="chipTopic">Topic: —</span>
+              <span class="chip" id="chipPattern">Pattern: —</span>
+              <span class="chip" id="chipCue">Cue: —</span>
+              <span class="chip" id="chipMatch">Match: —</span>
+            </div>
+
+            <div id="sentence" class="sentence">Press “New sentence”.</div>
+            <div id="guide" class="guide">Guide: —</div>
+
+            <div class="viz-wrap">
+              <div class="legend">
+                <span><span class="dot model"></span>Model</span>
+                <span><span class="dot student"></span>Your voice</span>
+                <span><span class="dot live"></span>Live</span>
+              </div>
+              <canvas id="pitchCanvas" width="760" height="190"></canvas>
+              <div class="mini">Tip: Match the shape, especially the end (↗ or ↘).</div>
+            </div>
+
+            <div class="label">Feedback</div>
+            <div id="feedback" class="feedback">Ready.</div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STATEMENTS = {
+      "Community":["I go to the community centre on Tuesday.","I live near the library.","The community meeting is at six o’clock.","The park is open today.","I know my neighbours."],
+      "Health":["I need to see a doctor.","I have an appointment today.","The pharmacy is near the clinic.","I feel better today.","I take this medicine after food."],
+      "Housing":["My rent is due on Friday.","There is hot water in the unit.","The laundry room is downstairs.","I check the lease carefully.","The window is broken."],
+      "Employment":["I start work at nine.","I work on weekends.","My workplace is in the city.","I sent my résumé yesterday.","I need safety boots."],
+      "Education":["My class starts at ten.","I study English every day.","Room B12 is upstairs.","I do my homework at night.","I have a test tomorrow."],
+      "Transport":["The bus leaves at 8:15.","This train stops at Central.","I tap on before I travel.","I buy a weekly pass.","I missed my stop."],
+      "Shopping and Money":["This shirt is twenty dollars.","The shop takes card payments.","The checkout is over there.","I keep my receipt.","I need to save money."],
+      "Government Services":["I have an appointment at Centrelink.","I bring my ID.","The Medicare office is on King Street.","I fill in this form.","I need to update my address."],
+      "Legal and Safety":["I always wear a seatbelt.","This area is safe at night.","The police station is near the mall.","I can call emergency services.","I know my rights at work."],
+      "Digital Skills":["I can send an email.","I use a strong password.","The Wi-Fi setting is in the menu.","I reset the router.","I forgot my password."],
+      "Family Life":["My son goes to primary school.","We have dinner together.","My daughter is at home.","We visit Grandma on Sunday.","We share housework."],
+      "Australian Culture":["We had a barbecue on Sunday.","I watch footy with friends.","I can see live music in town.","I bring a plate to share.","People queue politely here."],
+      "Environment":["I recycle paper and glass.","I save water at home.","The recycling bin is near the gate.","We plant more trees.","Today is very hot."],
+      "Financial Literacy":["I check my bank balance weekly.","I have a savings goal.","I can open an account at the bank.","I pay this bill online.","I compare prices before I buy."]
+    };
+
+    const topicEl = document.getElementById("topic"), patternEl = document.getElementById("pattern"), difficultyEl = document.getElementById("difficulty");
+    const sentenceEl = document.getElementById("sentence"), guideEl = document.getElementById("guide"), feedbackEl = document.getElementById("feedback");
+    const chipTopic = document.getElementById("chipTopic"), chipPattern = document.getElementById("chipPattern"), chipCue = document.getElementById("chipCue"), chipMatch = document.getElementById("chipMatch");
+    const scoreBar = document.getElementById("scoreBar"), scoreText = document.getElementById("scoreText");
+    const recBtn = document.getElementById("recBtn"), replayBtn = document.getElementById("replayBtn");
+    const customSentenceEl = document.getElementById("customSentence");
+    const canvas = document.getElementById("pitchCanvas"), ctx = canvas.getContext("2d");
+
+    let currentSentence="", currentPattern="statement", correct=0,total=0, recognition=null,listening=false;
+    let modelContour=[], studentContour=[], liveContour=[];
+    let audioCtx=null, analyser=null, micSource=null, rafId=null, mediaStream=null, recognitionDone=false, minHz=85, maxHz=350;
+
+    let mediaRecorder=null, recordedChunks=[], lastRecordingURL=null, lastRecordingBlob=null;
+
+    Object.keys(STATEMENTS).forEach(t=>{const o=document.createElement("option");o.value=t;o.textContent=t;topicEl.appendChild(o);});
+
+    const stripEnd=s=>s.trim().replace(/[.?!]+$/,"");
+    const capFirst=s=>s? s.charAt(0).toUpperCase()+s.slice(1):s;
+    const fixI=s=>s.replace(/\bi\b/g,"I").replace(/\bi'm\b/gi,"I'm").replace(/\bi've\b/gi,"I've").replace(/\bi'll\b/gi,"I'll").replace(/\bi'd\b/gi,"I'd");
+    const toStatement=s=>capFirst(fixI(stripEnd(s)))+".";
+
+    function statementToYesNo(s){
+      s=stripEnd(s);
+      if(/^I am (.+)$/i.test(s)) return s.replace(/^I am (.+)$/i,"Am I $1?");
+      if(/^I can (.+)$/i.test(s)) return s.replace(/^I can (.+)$/i,"Can I $1?");
+      if(/^I have (.+)$/i.test(s)) return s.replace(/^I have (.+)$/i,"Do I have $1?");
+      if(/^There is (.+)$/i.test(s)) return s.replace(/^There is (.+)$/i,"Is there $1?");
+      if(/^The bus leaves (.+)$/i.test(s)) return s.replace(/^The bus leaves (.+)$/i,"Does the bus leave $1?");
+      if(/^This train stops (.+)$/i.test(s)) return s.replace(/^This train stops (.+)$/i,"Does this train stop $1?");
+      return "Is it correct?";
+    }
+    function statementToWh(s){
+      s=stripEnd(s);
+      if(/^The pharmacy is (.+)$/i.test(s)) return "Where is the pharmacy?";
+      if(/^The laundry room is (.+)$/i.test(s)) return "Where is the laundry room?";
+      if(/^The Medicare office is (.+)$/i.test(s)) return "Where is the Medicare office?";
+      if(/^The police station is (.+)$/i.test(s)) return "Where is the police station?";
+      if(/^Room B12 is (.+)$/i.test(s)) return "Where is Room B12?";
+      if(/^My class starts (.+)$/i.test(s)) return "When does my class start?";
+      if(/^The bus leaves (.+)$/i.test(s)) return "When does the bus leave?";
+      return "Where is it?";
+    }
+    function forceQ(s){ return capFirst(fixI(stripEnd(s)))+"?"; }
+
+    function transformByPattern(base,p){
+      const st=toStatement(base);
+      if(p==="statement") return st;
+      if(p==="yesno") return forceQ(statementToYesNo(st));
+      if(p==="wh") return forceQ(statementToWh(st));
+      if(p==="choice") return "Do you prefer the bus or the train?";
+      if(p==="list") return "I like apples, bananas and pears.";
+      return st;
+    }
+
+    function cue(p){
+      if(p==="statement") return "Down at the end (↘)";
+      if(p==="yesno") return "Up at the end (↗)";
+      if(p==="wh") return "Wh strong, end down (↘)";
+      if(p==="choice") return "First up, last down (↗ ↘)";
+      if(p==="list") return "Up, up, down (↗ ↗ ↘)";
+      return "Natural";
+    }
+    function guide(p,s){
+      const t=stripEnd(s);
+      if(p==="statement") return `Guide: ${t} ↘`;
+      if(p==="yesno") return `Guide: ${t}? ↗`;
+      if(p==="wh") return `Guide: ${t}? ↘`;
+      if(p==="choice") return "Guide: first option ↗, second option ↘";
+      if(p==="list") return "Guide: apples ↗, bananas ↗ and pears ↘.";
+      return "Guide: —";
+    }
+
+    function shuffle(a){return a.map(v=>({v,r:Math.random()})).sort((x,y)=>x.r-y.r).map(z=>z.v);}
+    function normalize(t){return (t||"").toLowerCase().replace(/[^\w\s]|_/g,"").replace(/\s+/g," ").trim();}
+    function sim(a,b){
+      a=normalize(a);b=normalize(b); if(!a||!b) return 0;
+      const aw=a.split(" "), bw=b.split(" "), setB=new Set(bw); let m=0; aw.forEach(w=>{if(setB.has(w))m++;});
+      return m/Math.max(aw.length,bw.length);
+    }
+    function isQ(t){return /\?\s*$/.test((t||"").trim());}
+    function isS(t){return /\.\s*$/.test((t||"").trim());}
+
+    function generateModelContour(p, n=120){
+      const arr=[];
+      for(let i=0;i<n;i++){
+        const x=i/(n-1); let y=0.5;
+        if(p==="statement") y=0.62 - 0.28*x + 0.02*Math.sin(i/6);
+        else if(p==="yesno") y=0.42 + 0.32*x + 0.02*Math.sin(i/6);
+        else if(p==="wh") y=0.6 - 0.25*x + 0.03*Math.sin(i/7);
+        else if(p==="choice") y = x<0.55 ? (0.42 + 0.25*(x/0.55)) : (0.67 - 0.28*((x-0.55)/0.45));
+        else if(p==="list"){
+          if(x<0.33) y=0.45+0.18*(x/0.33);
+          else if(x<0.66) y=0.5+0.16*((x-0.33)/0.33);
+          else y=0.68-0.3*((x-0.66)/0.34);
+        }
+        arr.push(Math.min(0.95,Math.max(0.05,y)));
+      }
+      return arr;
+    }
+
+    function drawGrid(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+      ctx.lineWidth=1;
+      for(let i=0;i<=6;i++){
+        const y=(canvas.height-20)*(i/6)+10;
+        ctx.beginPath();ctx.moveTo(10,y);ctx.lineTo(canvas.width-10,y);ctx.stroke();
+      }
+      for(let i=0;i<=8;i++){
+        const x=(canvas.width-20)*(i/8)+10;
+        ctx.beginPath();ctx.moveTo(x,10);ctx.lineTo(x,canvas.height-10);ctx.stroke();
+      }
+    }
+    function drawContour(arr,color,width=3){
+      if(!arr || arr.length<2) return;
+      ctx.strokeStyle=color; ctx.lineWidth=width; ctx.beginPath();
+      arr.forEach((v,i)=>{
+        const x=10 + (canvas.width-20)*(i/(arr.length-1));
+        const y=10 + (canvas.height-20)*(1-v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    }
+    function drawLiveMarker(){
+      if(!listening || liveContour.length<2) return;
+      const i=liveContour.length-1;
+      const x=10+(canvas.width-20)*(i/Math.max(1,liveContour.length-1));
+      const y=10+(canvas.height-20)*(1-liveContour[i]);
+      ctx.fillStyle="#111827"; ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
+    }
+    function redraw(){ drawGrid(); drawContour(modelContour,"#2563eb",3.2); drawContour(studentContour,"#f97316",3.2); drawContour(liveContour,"#f97316",2); drawLiveMarker(); }
+
+    function normalizeContour(arr, n=120){
+      if(!arr || arr.length<2) return [];
+      const out=[];
+      for(let i=0;i<n;i++){
+        const p=i*(arr.length-1)/(n-1);
+        const a=Math.floor(p), b=Math.min(arr.length-1,a+1), t=p-a;
+        out.push(arr[a]*(1-t)+arr[b]*t);
+      }
+      return out;
+    }
+    function contourScore(a,b){
+      if(!a.length || !b.length) return 0;
+      let diff=0; for(let i=0;i<a.length;i++) diff += Math.abs(a[i]-b[i]);
+      const mean=diff/a.length; return Math.max(0, Math.round((1-mean/0.5)*100));
+    }
+    function finalDirection(arr){
+      if(arr.length<10) return 0;
+      const n=arr.length, k=Math.max(4,Math.floor(n*0.2));
+      return arr[n-1]-arr[n-k];
+    }
+    function variation(arr){
+      if(arr.length<4) return 0;
+      return Math.max(...arr)-Math.min(...arr);
+    }
+
+    function updateScore(ok){
+      total++; if(ok) correct++;
+      const pct= total? Math.round(correct/total*100):0;
+      scoreBar.style.width=pct+"%";
+      scoreText.textContent=`${correct} / ${total} correct`;
+    }
+
+    function makeFeedback(transcript){
+      const textOk = sim(currentSentence, transcript) >= 0.72;
+      const punctOk = (["statement","list"].includes(currentPattern)) ? isS(transcript) : isQ(transcript);
+
+      const m=normalizeContour(modelContour,120);
+      const s=normalizeContour(studentContour,120);
+      const cScore = contourScore(m,s);
+      chipMatch.textContent = `Match: ${cScore}%`;
+
+      const dir = finalDirection(s);
+      const wantRise = ["yesno"].includes(currentPattern);
+      const wantFall = ["statement","wh","choice","list"].includes(currentPattern);
+      const dirOk = wantRise ? dir>0.03 : wantFall ? dir<-0.02 : true;
+      const varOk = variation(s) >= 0.08;
+
+      let intonationMsg="", intonationClass="warn";
+      if(!s.length || s.length<25){
+        intonationMsg="Your recording is too short. Please say the full sentence.";
+        intonationClass="warn";
+      } else if(!varOk){
+        intonationMsg="Your voice is flat. Use more up and down movement.";
+        intonationClass="bad";
+      } else if(!dirOk){
+        if(wantRise) intonationMsg="Ending should go up (↗), but yours goes down.";
+        else intonationMsg="Ending should go down (↘), but yours goes up.";
+        intonationClass="bad";
+      } else if(cScore < 55){
+        intonationMsg="Some intonation is correct, but your shape is different from the model.";
+        intonationClass="warn";
+      } else {
+        intonationMsg="Good intonation shape. Your ending matches the model.";
+        intonationClass="ok";
+      }
+
+      const overall = textOk && punctOk && dirOk && varOk && cScore>=55;
+      updateScore(overall);
+
+      const out=[];
+      out.push(textOk? `<span class="ok">Words: Good match.</span>` : `<span class="bad">Words: Some key words are missing.</span>`);
+      out.push(punctOk? `<span class="ok">Punctuation: Correct.</span>` : `<span class="warn">Punctuation: Check the ending mark.</span>`);
+      out.push(`<span class="${intonationClass}">Intonation: ${intonationMsg}</span>`);
+      if(!dirOk) out.push("Try again: focus on the last 2–3 words.");
+      else if(!varOk) out.push("Try again: stress important words more.");
+      else if(cScore<55) out.push("Try again: copy the blue line shape.");
+      else out.push("Nice work. One more time for fluency.");
+      feedbackEl.innerHTML=out.join("<br>");
+    }
+
+    function updateChips(){
+      chipTopic.textContent=`Topic: ${topicEl.value}`;
+      chipPattern.textContent=`Pattern: ${patternEl.options[patternEl.selectedIndex].textContent}`;
+      chipCue.textContent=`Cue: ${cue(currentPattern)}`;
+      if(!studentContour.length) chipMatch.textContent="Match: —";
+    }
+
+    function clearLastRecording(){
+      if(lastRecordingURL){
+        URL.revokeObjectURL(lastRecordingURL);
+        lastRecordingURL=null;
+      }
+      lastRecordingBlob=null;
+      replayBtn.disabled=true;
+    }
+
+    function hasListCommaPattern(text){
+      // Expect one comma before "and": apples, bananas and pears
+      // Accepts optional Oxford comma too.
+      return /,\s+[^,]+?\s+(and|or)\s+[^,?.!]+[.?!]?\s*$/i.test(text);
+    }
+
+    function applyCustomSentenceLive(raw){
+      const txt = (raw || "").trim();
+      if(!txt){
+        feedbackEl.innerHTML = `<span class="warn">Type a sentence to use your own input.</span>`;
+        chipMatch.textContent = "Match: —";
+        guideEl.textContent = "Guide: —";
+        return;
+      }
+
+      currentPattern = patternEl.value;
+      currentSentence = capFirst(fixI(txt));
+      sentenceEl.textContent = currentSentence;
+
+      const hasQ = /\?\s*$/.test(currentSentence);
+      const hasDot = /\.\s*$/.test(currentSentence);
+
+      if(hasQ){
+        if(currentPattern === "yesno"){
+          guideEl.textContent = `Guide: ${stripEnd(currentSentence)}? ↗`;
+        } else if(currentPattern === "choice"){
+          guideEl.textContent = `Guide: ${stripEnd(currentSentence)}? ↗ ↘`;
+        } else {
+          guideEl.textContent = `Guide: ${stripEnd(currentSentence)}? ↘`;
+        }
+      }else if(hasDot){
+        if(currentPattern === "list"){
+          guideEl.textContent = `Guide: ${stripEnd(currentSentence)}. ↗ ↗ ↘`;
+        } else {
+          guideEl.textContent = `Guide: ${stripEnd(currentSentence)}. ↘`;
+        }
+      }else{
+        guideEl.textContent = "Guide: Add ? for question or . for statement";
+      }
+
+      const expectedQ = !["statement","list"].includes(currentPattern);
+      const endOk = expectedQ ? hasQ : hasDot;
+
+      if(currentPattern === "list"){
+        const commaOk = hasListCommaPattern(currentSentence);
+        if(endOk && commaOk){
+          chipMatch.textContent = "Match: ✅ list punctuation matches pattern";
+          feedbackEl.innerHTML = `<span class="ok">Live sync: Great — use comma after first item (e.g., apples, bananas and pears.).</span>`;
+        }else if(!endOk){
+          chipMatch.textContent = "Match: ❌ ending does not match pattern";
+          feedbackEl.innerHTML = `<span class="warn">Live sync: For list pattern, end with a period.</span>`;
+        }else{
+          chipMatch.textContent = "Match: ❌ comma placement needs update";
+          feedbackEl.innerHTML = `<span class="warn">Live sync: For list pattern use comma after first item, e.g., "apples, bananas and pears."</span>`;
+        }
+        return;
+      }
+
+      chipMatch.textContent = endOk ? "Match: ✅ ending matches pattern" : "Match: ❌ ending does not match pattern";
+      feedbackEl.innerHTML = endOk
+        ? `<span class="ok">Live sync: Great — your sentence ending matches the required intonation pattern.</span>`
+        : `<span class="warn">Live sync: For this pattern, end with ${expectedQ ? "?" : "."}.</span>`;
+    }
+
+    function newSentence(){
+      const topic=topicEl.value; currentPattern=patternEl.value;
+      let pool=STATEMENTS[topic] || ["I go to class."];
+      if(difficultyEl.value==="mixed") pool=shuffle(pool);
+      const base=pool[Math.floor(Math.random()*pool.length)];
+
+      currentSentence = transformByPattern(base,currentPattern);
+      if(["statement","list"].includes(currentPattern)) currentSentence = capFirst(fixI(stripEnd(currentSentence)))+".";
+      else currentSentence = capFirst(fixI(stripEnd(currentSentence)))+"?";
+
+      sentenceEl.textContent=currentSentence;
+      guideEl.textContent=guide(currentPattern,currentSentence);
+      feedbackEl.textContent="Ready.";
+      studentContour=[]; liveContour=[]; modelContour=generateModelContour(currentPattern,120);
+      clearLastRecording();
+      customSentenceEl.value = "";
+      updateChips(); redraw();
+    }
+
+    function speakModel(text){
+      if(!("speechSynthesis" in window)){ feedbackEl.innerHTML=`<span class="warn">Model audio not supported.</span>`; return; }
+      const u=new SpeechSynthesisUtterance(text); u.lang="en-AU"; u.rate=0.9; u.pitch=1.0;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    }
+
+    function autocorrelatePitch(buffer,sampleRate){
+      let SIZE=buffer.length, rms=0;
+      for(let i=0;i<SIZE;i++){const v=buffer[i]; rms+=v*v;}
+      rms=Math.sqrt(rms/SIZE); if(rms<0.01) return -1;
+      let r1=0,r2=SIZE-1,thres=0.2;
+      for(let i=0;i<SIZE/2;i++){ if(Math.abs(buffer[i])<thres){r1=i;break;} }
+      for(let i=1;i<SIZE/2;i++){ if(Math.abs(buffer[SIZE-i])<thres){r2=SIZE-i;break;} }
+      buffer=buffer.slice(r1,r2); SIZE=buffer.length;
+      const c=new Array(SIZE).fill(0);
+      for(let i=0;i<SIZE;i++) for(let j=0;j<SIZE-i;j++) c[i]+=buffer[j]*buffer[j+i];
+      let d=0; while(c[d]>c[d+1]) d++;
+      let maxval=-1,maxpos=-1;
+      for(let i=d;i<SIZE;i++){ if(c[i]>maxval){maxval=c[i];maxpos=i;} }
+      let T0=maxpos;
+      const x1=c[T0-1], x2=c[T0], x3=c[T0+1];
+      const a=(x1+x3-2*x2)/2, b=(x3-x1)/2;
+      if(a) T0=T0-b/(2*a);
+      const freq=sampleRate/T0;
+      if(freq<minHz || freq>maxHz) return -1;
+      return freq;
+    }
+
+    async function startPitchAndRecording(){
+      audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+      mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      micSource = audioCtx.createMediaStreamSource(mediaStream);
+      micSource.connect(analyser);
+
+      recordedChunks = [];
+      let mimeType = "";
+      if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) mimeType="audio/webm;codecs=opus";
+      else if (MediaRecorder.isTypeSupported("audio/webm")) mimeType="audio/webm";
+      else if (MediaRecorder.isTypeSupported("audio/mp4")) mimeType="audio/mp4";
+      mediaRecorder = new MediaRecorder(mediaStream, mimeType ? {mimeType} : undefined);
+      mediaRecorder.ondataavailable = (e)=>{ if(e.data && e.data.size>0) recordedChunks.push(e.data); };
+      mediaRecorder.onstop = ()=>{
+        if(recordedChunks.length){
+          if(lastRecordingURL) URL.revokeObjectURL(lastRecordingURL);
+          lastRecordingBlob = new Blob(recordedChunks, {type: mediaRecorder.mimeType || "audio/webm"});
+          lastRecordingURL = URL.createObjectURL(lastRecordingBlob);
+          replayBtn.disabled = false;
+        }
+      };
+      mediaRecorder.start();
+
+      const buf = new Float32Array(analyser.fftSize);
+      liveContour = [];
+      function tick(){
+        analyser.getFloatTimeDomainData(buf);
+        const f0=autocorrelatePitch(buf,audioCtx.sampleRate);
+        if(f0>0){
+          const norm=(Math.log(f0)-Math.log(minHz))/(Math.log(maxHz)-Math.log(minHz));
+          liveContour.push(Math.max(0.02,Math.min(0.98,norm)));
+          if(liveContour.length>220) liveContour.shift();
+        }
+        redraw();
+        if(listening) rafId=requestAnimationFrame(tick);
+      }
+      tick();
+    }
+
+    function stopPitchAndRecording(){
+      if(rafId) cancelAnimationFrame(rafId);
+      rafId=null;
+
+      if(mediaRecorder && mediaRecorder.state !== "inactive"){
+        mediaRecorder.stop();
+      }
+
+      if(mediaStream){
+        mediaStream.getTracks().forEach(t=>t.stop());
+        mediaStream=null;
+      }
+
+      studentContour = liveContour.slice();
+      liveContour = [];
+      redraw();
+    }
+
+    function replayLastRecording(){
+      if(!lastRecordingURL){
+        feedbackEl.innerHTML = `<span class="warn">No recording yet.</span> Press Start practice first.`;
+        return;
+      }
+      const audio = new Audio(lastRecordingURL);
+      audio.play().catch(()=>{
+        feedbackEl.innerHTML = `<span class="warn">Playback blocked by browser.</span> Click Replay my voice again.`;
+      });
+    }
+
+    function initRecognition(){
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SR) return null;
+      const rec=new SR(); rec.lang="en-AU"; rec.interimResults=false; rec.maxAlternatives=1;
+
+      rec.onresult=(e)=>{
+        recognitionDone=true;
+        const text=e.results[0][0].transcript||"";
+        makeFeedback(text);
+      };
+      rec.onerror=(e)=>{feedbackEl.innerHTML=`<span class="warn">Mic note:</span> ${e.error}. Try again.`;};
+      rec.onend=()=>{
+        listening=false;
+        recBtn.textContent="Start practice";
+        stopPitchAndRecording();
+
+        if(!recognitionDone){
+          if(studentContour.length>20){
+            const cScore = contourScore(normalizeContour(modelContour,120), normalizeContour(studentContour,120));
+            chipMatch.textContent = `Match: ${cScore}%`;
+            feedbackEl.innerHTML = `<span class="warn">I could not read your words clearly.</span><br>Intonation match: ${cScore}%.<br>Please try again, a little slower.`;
+          }
+        }
+      };
+      return rec;
+    }
+
+    document.getElementById("newBtn").addEventListener("click",newSentence);
+    document.getElementById("speakBtn").addEventListener("click",()=>{if(currentSentence) speakModel(currentSentence);});
+    replayBtn.addEventListener("click", replayLastRecording);
+
+    customSentenceEl.addEventListener("input", (e)=>{
+      applyCustomSentenceLive(e.target.value);
+    });
+
+    recBtn.addEventListener("click", async ()=>{
+      if(!recognition) recognition=initRecognition();
+      if(!recognition){feedbackEl.innerHTML=`<span class="warn">Speech recognition not supported in this browser.</span>`;return;}
+
+      if(listening){
+        recognition.stop();
+        listening=false;
+        recBtn.textContent="Start practice";
+        stopPitchAndRecording();
+      }else{
+        recognitionDone=false;
+        feedbackEl.textContent="Listening...";
+        listening=true;
+        recBtn.textContent="Stop";
+        try{
+          await startPitchAndRecording();
+          recognition.start();
+        }catch{
+          listening=false;
+          recBtn.textContent="Start practice";
+          feedbackEl.innerHTML=`<span class="warn">Microphone access is blocked.</span>`;
+        }
+      }
+    });
+
+    topicEl.addEventListener("change",newSentence);
+    patternEl.addEventListener("change",()=>{
+      newSentence();
+      if(customSentenceEl.value.trim()){
+        applyCustomSentenceLive(customSentenceEl.value);
+      }
+    });
+    difficultyEl.addEventListener("change",newSentence);
+
+    topicEl.value="Community";
+    newSentence();
+    redraw();
+  </script>
+</body>
+</html>
